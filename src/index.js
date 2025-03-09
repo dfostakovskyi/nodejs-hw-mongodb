@@ -8,7 +8,7 @@ import { setupServer } from './server.js';
 
 const bootstrap = async () => {
   await initMongoConnection();
-  setupServer(5000);
+  setupServer(3000);
 };
 
 bootstrap();
