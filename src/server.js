@@ -1,57 +1,29 @@
 //src\server.js
+
 import express from 'express';
 import cors from 'cors';
 import pino from 'pino-http';
+import { contactsRouter } from './routers/contacts.js';
+import errorHandler from './middlewares/errorHandler.js';
+import notFoundHandler from './middlewares/notFoundHandler.js';
 
-import { getContacts, getContactById } from './services/contacts.js';
-
-const setupServer = () => {
+const setupServer = (port = 3000) => {
   const app = express();
 
-  // Setup CORS
   app.use(cors());
 
-  // Setup pino logger
   app.use(pino());
 
-  // Setup routes
-  app.get('/contacts', async (req, res) => {
-    const contacts = await getContacts();
-    res.status(200).json({
-      status: 200,
-      message: 'Successfully found contacts!',
-      data: contacts,
-    });
-  });
+  app.use(express.json());
 
-  app.get('/contacts/:contactId', async (req, res) => {
-    const contact = await getContactById(req.params.contactId);
-    if (contact) {
-      res.status(200).json({
-        status: 200,
-        message: `Successfully found contact with id ${req.params.contactId}!`,
-        data: contact,
-      });
-    } else {
-      res.status(404).json({
-        message: 'Contact not found',
-      });
-    }
-  });
+  app.use('/contacts', contactsRouter);
 
-  // Handle non-existing routes
-  app.use((req, res, next) => {
-    res.status(404).json({
-      message: 'Route not found',
-    });
-  });
+  app.use(notFoundHandler);
 
-  // Get the port from environment variables or default to 3000
-  const PORT = process.env.PORT || 3000;
+  app.use(errorHandler);
 
-  // Start the server
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+  app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
   });
 
   return app;

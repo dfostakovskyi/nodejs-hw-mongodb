@@ -6,7 +6,6 @@ dotenv.config();
 
 import { getEnvVar } from '../utils/getEnvVar.js';
 
-// Ініціалізація з'єднання з MongoDB
 export const initMongoConnection = async () => {
   try {
     const user = getEnvVar('MONGODB_USER');

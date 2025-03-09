@@ -3,7 +3,6 @@
 import { ContactsCollection } from '../db/models/contact.js';
 import mongoose from 'mongoose';
 
-// Отримання всіх контактів
 export const getContacts = async () => {
   console.log('Fetching contacts...');
   const contacts = await ContactsCollection.find();
@@ -11,7 +10,6 @@ export const getContacts = async () => {
   return contacts;
 };
 
-// Отримання контакту за ID
 export const getContactById = async (id) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     console.log('Invalid ObjectId:', id);
@@ -21,4 +19,39 @@ export const getContactById = async (id) => {
   const contact = await ContactsCollection.findById(id);
   console.log('Contact fetched:', contact);
   return contact;
+};
+
+export const createContact = async (contactData) => {
+  console.log('Creating contact:', contactData);
+  const newContact = await ContactsCollection.create(contactData);
+  console.log('Contact created:', newContact);
+  return newContact;
+};
+
+export const updateContact = async (id, contactData) => {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    console.log('Invalid ObjectId:', id);
+    return null;
+  }
+  console.log('Updating contact with id:', id);
+  const updatedContact = await ContactsCollection.findByIdAndUpdate(
+    id,
+    contactData,
+    {
+      new: true,
+    },
+  );
+  console.log('Contact updated:', updatedContact);
+  return updatedContact;
+};
+
+export const deleteContact = async (id) => {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    console.log('Invalid ObjectId:', id);
+    return null;
+  }
+  console.log('Deleting contact with id:', id);
+  const deletedContact = await ContactsCollection.findByIdAndDelete(id);
+  console.log('Contact deleted:', deletedContact);
+  return deletedContact;
 };
