@@ -8,13 +8,34 @@ import {
   updateContact,
   deleteContact,
 } from '../services/contacts.js';
+import { parsePaginationParams } from '../utils/parsePaginationParams.js';
+import { calculatePaginationData } from '../utils/calculatePaginationData.js';
+import { parseSortParams } from '../utils/parseSortParams.js';
 
 export const getContactsController = async (req, res) => {
-  const contacts = await getContacts();
+  const { page, perPage } = parsePaginationParams(req.query);
+  const { field: sortField, order: sortOrder } = parseSortParams(req.query);
+  const filters = {
+    contactType: req.query.type || null,
+    isFavourite: req.query.isFavourite || null,
+  };
+
+  const { contacts, count } = await getContacts(
+    page,
+    perPage,
+    sortField,
+    sortOrder,
+    filters,
+  );
+  const paginationData = calculatePaginationData(count, perPage, page);
+
   res.status(200).json({
     status: 200,
     message: 'Successfully found contacts!',
-    data: contacts,
+    data: {
+      data: contacts,
+      ...paginationData,
+    },
   });
 };
 

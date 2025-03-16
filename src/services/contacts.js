@@ -1,20 +1,37 @@
 //src\services\contacts.js
 
 import { ContactsCollection } from '../db/models/contact.js';
-// import mongoose from 'mongoose';
 
-export const getContacts = async () => {
-  const contacts = await ContactsCollection.find();
+export const getContacts = async (
+  page,
+  perPage,
+  sortField,
+  sortOrder,
+  filters,
+) => {
+  const skip = (page - 1) * perPage;
+  const sortOptions = { [sortField]: sortOrder === 'asc' ? 1 : -1 };
 
-  return contacts;
+  const filterConditions = {};
+  if (filters.contactType) {
+    filterConditions.contactType = filters.contactType;
+  }
+  if (typeof filters.isFavourite !== 'undefined') {
+    filterConditions.isFavourite = filters.isFavourite === 'true';
+  }
+
+  const [contacts, count] = await Promise.all([
+    ContactsCollection.find(filterConditions)
+      .sort(sortOptions)
+      .skip(skip)
+      .limit(perPage),
+    ContactsCollection.countDocuments(filterConditions),
+  ]);
+
+  return { contacts, count };
 };
 
 export const getContactById = async (id) => {
-  // if (!mongoose.Types.ObjectId.isValid(id)) {
-  //   console.log('Invalid ObjectId:', id);
-  //   return null;
-  // }
-
   const contact = await ContactsCollection.findById(id);
 
   return contact;
@@ -27,11 +44,6 @@ export const createContact = async (contactData) => {
 };
 
 export const updateContact = async (id, contactData) => {
-  // if (!mongoose.Types.ObjectId.isValid(id)) {
-  //   console.log('Invalid ObjectId:', id);
-  //   return null;
-  // }
-
   const updatedContact = await ContactsCollection.findByIdAndUpdate(
     id,
     contactData,
@@ -44,11 +56,6 @@ export const updateContact = async (id, contactData) => {
 };
 
 export const deleteContact = async (id) => {
-  // if (!mongoose.Types.ObjectId.isValid(id)) {
-  //   console.log('Invalid ObjectId:', id);
-  //   return null;
-  // }
-
   const deletedContact = await ContactsCollection.findByIdAndDelete(id);
 
   return deletedContact;
