@@ -41,4 +41,4 @@ contactsRouter.delete(
   ctrlWrapper(deleteContactController),
 );
 
-export { contactsRouter };
+export default contactsRouter;
