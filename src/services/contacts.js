@@ -3,6 +3,7 @@
 import { ContactsCollection } from '../db/models/contact.js';
 
 export const getContacts = async (
+  userId,
   page,
   perPage,
   sortField,
@@ -12,7 +13,7 @@ export const getContacts = async (
   const skip = (page - 1) * perPage;
   const sortOptions = { [sortField]: sortOrder === 'asc' ? 1 : -1 };
 
-  const filterConditions = {};
+  const filterConditions = { userId };
   if (filters.contactType) {
     filterConditions.contactType = filters.contactType;
   }
@@ -31,32 +32,32 @@ export const getContacts = async (
   return { contacts, count };
 };
 
-export const getContactById = async (id) => {
-  const contact = await ContactsCollection.findById(id);
-
+export const getContactById = async (userId, id) => {
+  const contact = await ContactsCollection.findOne({ _id: id, userId });
   return contact;
 };
 
-export const createContact = async (contactData) => {
-  const newContact = await ContactsCollection.create(contactData);
-
+export const createContact = async (userId, contactData) => {
+  const newContact = await ContactsCollection.create({
+    ...contactData,
+    userId,
+  });
   return newContact;
 };
 
-export const updateContact = async (id, contactData) => {
-  const updatedContact = await ContactsCollection.findByIdAndUpdate(
-    id,
+export const updateContact = async (userId, id, contactData) => {
+  const updatedContact = await ContactsCollection.findOneAndUpdate(
+    { _id: id, userId },
     contactData,
-    {
-      new: true,
-    },
+    { new: true },
   );
-
   return updatedContact;
 };
 
-export const deleteContact = async (id) => {
-  const deletedContact = await ContactsCollection.findByIdAndDelete(id);
-
+export const deleteContact = async (userId, id) => {
+  const deletedContact = await ContactsCollection.findOneAndDelete({
+    _id: id,
+    userId,
+  });
   return deletedContact;
 };
