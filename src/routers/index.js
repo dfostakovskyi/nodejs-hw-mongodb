@@ -6,7 +6,7 @@ import authRouter from './auth.js';
 
 const router = Router();
 
-router.use('/contacts', contactsRouter); // Виправлено шлях для контактового роутера
+router.use('/contacts', contactsRouter);
 router.use('/auth', authRouter);
 
 export default router;

@@ -10,5 +10,5 @@ export const isValidId = (req, res, next) => {
     return next(createHttpError(400, `Invalid ID format: ${contactId}`));
   }
 
-  next(); // Якщо ID валідний, переходимо далі
+  next();
 };

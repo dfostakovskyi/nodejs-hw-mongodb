@@ -20,7 +20,10 @@ export const getContactsController = async (req, res) => {
     isFavourite: req.query.isFavourite || null,
   };
 
+  const userId = req.user._id;
+
   const { contacts, count } = await getContacts(
+    userId,
     page,
     perPage,
     sortField,
@@ -40,7 +43,9 @@ export const getContactsController = async (req, res) => {
 };
 
 export const getContactByIdController = async (req, res) => {
-  const contact = await getContactById(req.params.contactId);
+  const userId = req.user._id;
+  const contact = await getContactById(userId, req.params.contactId);
+
   if (contact) {
     res.status(200).json({
       status: 200,
@@ -53,7 +58,10 @@ export const getContactByIdController = async (req, res) => {
 };
 
 export const postContactController = async (req, res) => {
-  const contact = await createContact(req.body);
+  const userId = req.user._id;
+
+  const contact = await createContact(userId, req.body);
+
   res.status(201).json({
     status: 201,
     message: 'Successfully created contact!',
@@ -62,11 +70,18 @@ export const postContactController = async (req, res) => {
 };
 
 export const patchContactController = async (req, res) => {
+  const userId = req.user._id;
+
   if (!req.body || Object.keys(req.body).length === 0) {
     throw createError(400, 'Request body cannot be empty');
   }
 
-  const updatedContact = await updateContact(req.params.contactId, req.body);
+  const updatedContact = await updateContact(
+    userId,
+    req.params.contactId,
+    req.body,
+  );
+
   if (!updatedContact) {
     throw createError(404, 'Contact not found');
   }
@@ -79,7 +94,10 @@ export const patchContactController = async (req, res) => {
 };
 
 export const deleteContactController = async (req, res) => {
-  const contact = await deleteContact(req.params.contactId);
+  const userId = req.user._id;
+
+  const contact = await deleteContact(userId, req.params.contactId);
+
   if (contact) {
     res.status(204).end();
   } else {

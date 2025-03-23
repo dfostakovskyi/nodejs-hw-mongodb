@@ -1,63 +1,90 @@
 //src\services\auth.js
 
-import { UsersCollection } from '../db/models/user.js';
+import { User } from '../db/models/user.js';
+import { Session } from '../db/models/session.js';
 import { randomBytes } from 'crypto';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import createHttpError from 'http-errors';
 
-import { FIFTEEN_MINUTES, ONE_DAY } from '../constants/index.js';
-import { Session } from '../db/models/session.js';
+import { FIFTEEN_MINUTES, THIRTY_DAYS } from '../constants/index.js';
 
-export const registerUser = async (payload) => {
-  const existingUser = await UsersCollection.findOne({ email: payload.email });
+export const registerUser = async ({ name, email, password }) => {
+  const existingUser = await User.findOne({ email });
   if (existingUser) {
-    throw createHttpError(409, 'User already exists');
+    throw createHttpError(409, 'Email in use');
   }
 
-  // Хешування пароля перед створенням користувача
-  payload.password = await bcrypt.hash(payload.password, 10);
+  const hashedPassword = await bcrypt.hash(password, 10);
 
-  return await UsersCollection.create(payload);
+  return await User.create({
+    name,
+    email,
+    password: hashedPassword,
+  });
 };
 
-export const loginUser = async (payload) => {
-  const user = await UsersCollection.findOne({ email: payload.email });
+export const loginUser = async ({ email, password }) => {
+  const user = await User.findOne({ email });
   if (!user) {
-    throw createHttpError(404, 'User not found');
-  }
-
-  const isEqual = await bcrypt.compare(payload.password, user.password);
-  if (!isEqual) {
     throw createHttpError(401, 'Unauthorized');
   }
 
-  // Видаляємо всі попередні сесії користувача
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+  if (!isPasswordValid) {
+    throw createHttpError(401, 'Unauthorized');
+  }
+
   await Session.deleteMany({ userId: user._id });
 
-  // Генеруємо токени
   const accessToken = randomBytes(30).toString('hex');
   const refreshToken = randomBytes(30).toString('hex');
 
-  // Створюємо нову сесію
-  const session = await Session.create({
+  await Session.create({
     userId: user._id,
     accessToken,
     refreshToken,
     accessTokenValidUntil: new Date(Date.now() + FIFTEEN_MINUTES),
-    refreshTokenValidUntil: new Date(Date.now() + ONE_DAY),
+    refreshTokenValidUntil: new Date(Date.now() + THIRTY_DAYS),
   });
 
-  return session;
+  return { accessToken, refreshToken };
 };
 
-// Очищення прострочених сесій
 export const cleanExpiredSessions = async () => {
   const now = new Date();
 
-  // Видаляємо всі прострочені refreshToken
   const deletedSessions = await Session.deleteMany({
     refreshTokenValidUntil: { $lt: now },
   });
 
   console.log(`Deleted ${deletedSessions.deletedCount} expired sessions.`);
+};
+
+export const refreshSession = async (refreshToken) => {
+  const existingSession = await Session.findOne({ refreshToken });
+  if (!existingSession || existingSession.refreshTokenValidUntil < new Date()) {
+    throw createHttpError(401, 'Invalid or expired refresh token');
+  }
+
+  await Session.deleteMany({ userId: existingSession.userId });
+
+  const accessToken = randomBytes(30).toString('hex');
+  const newRefreshToken = randomBytes(30).toString('hex');
+
+  await Session.create({
+    userId: existingSession.userId,
+    accessToken,
+    refreshToken: newRefreshToken,
+    accessTokenValidUntil: new Date(Date.now() + FIFTEEN_MINUTES),
+    refreshTokenValidUntil: new Date(Date.now() + THIRTY_DAYS),
+  });
+
+  return { accessToken, newRefreshToken };
+};
+
+export const logoutUser = async (refreshToken) => {
+  const deletedSession = await Session.findOneAndDelete({ refreshToken });
+  if (!deletedSession) {
+    throw createHttpError(404, 'Session not found');
+  }
 };
