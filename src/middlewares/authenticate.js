@@ -22,13 +22,14 @@ export const authenticate = async (req, res, next) => {
     const session = await Session.findOne({ accessToken: token });
 
     if (!session) {
-      throw createHttpError(401, 'Session not found');
+      throw createHttpError(401, 'Session not found or token invalid');
     }
 
     const isAccessTokenExpired =
       new Date() > new Date(session.accessTokenValidUntil);
 
     if (isAccessTokenExpired) {
+      await Session.deleteOne({ accessToken: token });
       throw createHttpError(401, 'Access token expired');
     }
 
