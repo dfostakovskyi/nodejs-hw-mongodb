@@ -31,13 +31,13 @@ export const loginUserController = async (req, res) => {
 
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
-    secure: true,
+    secure: process.env.NODE_ENV === 'production',
     maxAge: 30 * 24 * 60 * 60 * 1000,
   });
 
   res.status(200).json({
     status: 200,
-    message: 'Successfully logged in an user!',
+    message: 'Successfully logged in a user!',
     data: { accessToken },
   });
 };
@@ -53,7 +53,7 @@ export const refreshSessionController = async (req, res) => {
 
   res.cookie('refreshToken', newRefreshToken, {
     httpOnly: true,
-    secure: true,
+    secure: process.env.NODE_ENV === 'production',
     maxAge: 30 * 24 * 60 * 60 * 1000,
   });
 
@@ -68,15 +68,26 @@ export const logoutUserController = async (req, res) => {
   const { refreshToken } = req.cookies;
 
   if (!refreshToken) {
-    throw createHttpError(401, 'No refresh token provided');
+    return res.status(401).json({
+      status: 401,
+      message: 'No refresh token provided',
+    });
   }
 
-  await logoutUser(refreshToken);
+  try {
+    await logoutUser(refreshToken);
 
-  res.clearCookie('refreshToken', {
-    httpOnly: true,
-    secure: true,
-  });
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+    });
 
-  res.status(204).send();
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json({
+      status: 500,
+      message: 'Logout failed',
+      error: error.message,
+    });
+  }
 };
