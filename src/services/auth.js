@@ -1,10 +1,17 @@
 //src\services\auth.js
 
+import jwt from 'jsonwebtoken';
+
+import { SMTP } from '../constants/index.js';
+import { getEnvVar } from '../utils/getEnvVar.js';
+import { sendEmail } from '../utils/sendMail.js';
 import { User } from '../db/models/user.js';
 import { Session } from '../db/models/session.js';
 import { randomBytes } from 'crypto';
 import bcrypt from 'bcryptjs';
 import createHttpError from 'http-errors';
+
+import { ContactsCollection } from '../db/models/contact.js';
 
 import { FIFTEEN_MINUTES, THIRTY_DAYS } from '../constants/index.js';
 
@@ -87,4 +94,28 @@ export const logoutUser = async (refreshToken) => {
   if (!deletedSession) {
     throw createHttpError(404, 'Session not found');
   }
+};
+
+export const requestResetToken = async (email) => {
+  const user = await ContactsCollection.findOne({ email });
+  if (!user) {
+    throw createHttpError(404, 'User not found');
+  }
+  const resetToken = jwt.sign(
+    {
+      sub: user._id,
+      email,
+    },
+    getEnvVar('JWT_SECRET'),
+    {
+      expiresIn: '15m',
+    },
+  );
+
+  await sendEmail({
+    from: getEnvVar(SMTP.SMTP_FROM),
+    to: email,
+    subject: 'Reset your password',
+    html: `<p>Click <a href="${resetToken}">here</a> to reset your password!</p>`,
+  });
 };
