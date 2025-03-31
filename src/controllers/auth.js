@@ -128,6 +128,7 @@ export const sendResetEmailController = async (req, res) => {
       data: {},
     });
   } catch (error) {
+    console.error(error);
     throw createHttpError(
       500,
       'Failed to send the email, please try again later.',
@@ -142,6 +143,7 @@ export const resetPwdController = async (req, res) => {
   try {
     decoded = jwt.verify(token, process.env.JWT_SECRET);
   } catch (error) {
+    console.error(error);
     throw createHttpError(401, 'Token is expired or invalid.');
   }
 
