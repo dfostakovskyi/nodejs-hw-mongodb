@@ -1,49 +1,52 @@
 //src\server.js
 
-import express from 'express';
-import cors from 'cors';
-import pino from 'pino-http';
-import cookieParser from 'cookie-parser';
-import contactsRouter from './routers/contacts.js';
-import authRouter from './routers/auth.js';
-import errorHandler from './middlewares/errorHandler.js';
-import notFoundHandler from './middlewares/notFoundHandler.js';
-import { cleanExpiredSessions } from './services/auth.js';
+import express from "express";
+import cors from "cors";
+import pino from "pino-http";
+import cookieParser from "cookie-parser";
+import contactsRouter from "./routers/contacts.js";
+import authRouter from "./routers/auth.js";
+import errorHandler from "./middlewares/errorHandler.js";
+import notFoundHandler from "./middlewares/notFoundHandler.js";
+import { cleanExpiredSessions } from "./services/auth.js";
+import { swaggerDocs } from "./middlewares/swaggerDocs.js";
+import { UPLOAD_DIR } from "./constants/index.js";
 
 const setupServer = (port = 3000) => {
-  const app = express();
+    const app = express();
 
-  app.use(cors());
-  app.use(pino());
-  app.use(express.json());
-  app.use(cookieParser());
+    app.use(cors());
+    app.use(pino());
+    app.use(express.json());
+    app.use(cookieParser());
 
-  app.use('/contacts', contactsRouter);
-  app.use('/auth', authRouter);
+    app.use("/contacts", contactsRouter);
+    app.use("/auth", authRouter);
 
-  app.use(notFoundHandler);
-  app.use(errorHandler);
+    app.use("/uploads", express.static(UPLOAD_DIR));
+    app.use("/api-docs", ...swaggerDocs());
 
-  cleanExpiredSessions()
-    .then(() => console.log('Expired sessions cleaned up at server start.'))
-    .catch((error) =>
-      console.error('Error during cleaning expired sessions:', error.message),
-    );
+    app.use(notFoundHandler);
+    app.use(errorHandler);
 
-  setInterval(async () => {
-    try {
-      await cleanExpiredSessions();
-      console.log('Periodic cleanup of expired sessions completed.');
-    } catch (error) {
-      console.error('Error during periodic cleanup:', error.message);
-    }
-  }, 3600000);
+    cleanExpiredSessions()
+        .then(() => console.log("Expired sessions cleaned up at server start."))
+        .catch(error => console.error("Error during cleaning expired sessions:", error.message));
 
-  app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
-  });
+    setInterval(async () => {
+        try {
+            await cleanExpiredSessions();
+            console.log("Periodic cleanup of expired sessions completed.");
+        } catch (error) {
+            console.error("Error during periodic cleanup:", error.message);
+        }
+    }, 3600000);
 
-  return app;
+    app.listen(port, () => {
+        console.log(`Server is running on port ${port}`);
+    });
+
+    return app;
 };
 
 export { setupServer };
