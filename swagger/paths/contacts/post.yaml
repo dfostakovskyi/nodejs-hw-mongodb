@@ -1,0 +1,89 @@
+tags:
+    - Contacts
+summary: Створення нового контакту
+operationId: createContact
+description: Ендпоінт дозволяє створити новий контакт із передачею необхідних даних у тілі запиту.
+security:
+    - bearerAuth: []
+requestBody:
+    description: Дані нового контакту
+    required: true
+    content:
+        application/json:
+            schema:
+                type: object
+                properties:
+                    name:
+                        type: string
+                        description: "Ім'я контакту"
+                        example: "John Doe"
+                    phoneNumber:
+                        type: string
+                        description: "Номер телефону контакту"
+                        example: "+1234567890"
+                    email:
+                        type: string
+                        description: "Електронна адреса контакту"
+                        example: "johndoe@example.com"
+                    contactType:
+                        type: string
+                        description: "Тип контакту"
+                        enum: ["work", "home", "personal"]
+                        example: "work"
+                    isFavourite:
+                        type: boolean
+                        description: "Чи є контакт у списку улюблених"
+                        example: false
+                    photo:
+                        type: string
+                        description: "Посилання на фото контакту"
+                        example: "https://example.com/photo.jpg"
+                required:
+                    - name
+                    - phoneNumber
+                    - contactType
+responses:
+    201:
+        description: Успішне створення нового контакту
+        content:
+            application/json:
+                schema:
+                    type: object
+                    properties:
+                        id:
+                            type: string
+                            description: "Унікальний ідентифікатор контакту"
+                            example: "65e4decdd286b30065d54af9"
+                        name:
+                            type: string
+                            description: "Ім'я контакту"
+                            example: "John Doe"
+                        phoneNumber:
+                            type: string
+                            description: "Номер телефону контакту"
+                            example: "+1234567890"
+                        email:
+                            type: string
+                            description: "Електронна адреса контакту"
+                            example: "johndoe@example.com"
+                        contactType:
+                            type: string
+                            description: "Тип контакту"
+                            enum: ["work", "home", "personal"]
+                            example: "work"
+                        isFavourite:
+                            type: boolean
+                            description: "Чи є контакт у списку улюблених"
+                            example: false
+                        createdAt:
+                            type: string
+                            format: date-time
+                            description: "Дата створення контакту"
+                            example: "2023-05-01T12:00:00Z"
+                        updatedAt:
+                            type: string
+                            format: date-time
+                            description: "Дата останнього оновлення контакту"
+                            example: "2023-05-02T15:30:00Z"
+    400:
+        description: Неправильні дані у запиті
