@@ -1,8 +1,8 @@
 tags:
     - Contacts
 summary: Оновлення контактів
-operationId: updateContactById
-description: Ендпоінт дозволяє оновити інформацію про контакт за його унікальним ідентифікатором.
+operationId: updateContact
+description: Ендпоінт дозволяє оновити інформацію про контакт за його унікальним ідентифікатором із використанням формату `multipart/form-data`.
 security:
     - bearerAuth: []
 parameters:
@@ -16,7 +16,7 @@ requestBody:
     description: Оновлювані дані контакту
     required: true
     content:
-        application/json:
+        multipart/form-data:
             schema:
                 type: object
                 properties:
@@ -41,10 +41,10 @@ requestBody:
                         description: "Тип контакту"
                         enum: ["work", "home", "personal"]
                         example: "home"
-                required:
-                    - name
-                    - phoneNumber
-                    - contactType
+                    photo:
+                        type: string
+                        format: binary
+                        description: "Оновлене зображення контакту (опціонально)"
 responses:
     200:
         description: Успішне оновлення контакту
@@ -53,40 +53,85 @@ responses:
                 schema:
                     type: object
                     properties:
-                        id:
+                        status:
+                            type: integer
+                            example: 200
+                            description: HTTP статус
+                        message:
                             type: string
-                            description: "Унікальний ідентифікатор контакту"
-                            example: "65e4decdd286b30065d54af9"
-                        name:
+                            example: "Successfully updated contact!"
+                            description: Повідомлення про успішну операцію
+                        data:
+                            type: object
+                            properties:
+                                id:
+                                    type: string
+                                    description: "Унікальний ідентифікатор контакту"
+                                    example: "65e4decdd286b30065d54af9"
+                                name:
+                                    type: string
+                                    description: "Ім'я контакту"
+                                    example: "Jane Doe"
+                                phoneNumber:
+                                    type: string
+                                    description: "Номер телефону контакту"
+                                    example: "+1234567890"
+                                email:
+                                    type: string
+                                    description: "Електронна адреса контакту"
+                                    example: "janedoe@example.com"
+                                isFavourite:
+                                    type: boolean
+                                    description: "Чи є контакт у списку улюблених"
+                                    example: true
+                                contactType:
+                                    type: string
+                                    description: "Тип контакту"
+                                    enum: ["work", "home", "personal"]
+                                    example: "home"
+                                createdAt:
+                                    type: string
+                                    format: date-time
+                                    description: "Дата створення контакту"
+                                    example: "2023-05-01T12:00:00Z"
+                                updatedAt:
+                                    type: string
+                                    format: date-time
+                                    description: "Дата останнього оновлення контакту"
+                                    example: "2023-05-02T15:30:00Z"
+    400:
+        description: Неправильні дані у запиті
+        content:
+            application/json:
+                schema:
+                    type: object
+                    properties:
+                        status:
+                            type: integer
+                            example: 400
+                            description: HTTP статус
+                        message:
                             type: string
-                            description: "Ім'я контакту"
-                            example: "John Doe"
-                        phoneNumber:
-                            type: string
-                            description: "Номер телефону контакту"
-                            example: "+1234567890"
-                        email:
-                            type: string
-                            description: "Електронна адреса контакту"
-                            example: "johndoe@example.com"
-                        isFavourite:
-                            type: boolean
-                            description: "Чи є контакт у списку улюблених"
-                            example: true
-                        contactType:
-                            type: string
-                            description: "Тип контакту"
-                            enum: ["work", "home", "personal"]
-                            example: "work"
-                        createdAt:
-                            type: string
-                            format: date-time
-                            description: "Дата створення контакту"
-                            example: "2023-05-01T12:00:00Z"
-                        updatedAt:
-                            type: string
-                            format: date-time
-                            description: "Дата останнього оновлення контакту"
-                            example: "2023-05-02T15:30:00Z"
+                            example: "Invalid request body!"
+                            description: Повідомлення про помилку
+                        errors:
+                            type: array
+                            items:
+                                type: string
+                                example: "Field `name` is required"
+                            description: Додаткові деталі помилки
     404:
         description: Контакт не знайдено
+        content:
+            application/json:
+                schema:
+                    type: object
+                    properties:
+                        status:
+                            type: integer
+                            example: 404
+                            description: HTTP статус
+                        message:
+                            type: string
+                            example: "Contact not found!"
+                            description: Повідомлення про помилку

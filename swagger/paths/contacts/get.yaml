@@ -39,44 +39,83 @@ responses:
         content:
             application/json:
                 schema:
-                    type: array
-                    items:
-                        type: object
-                        properties:
-                            id:
-                                type: string
-                                description: "Унікальний ідентифікатор контакту"
-                                example: "65e4decdd286b30065d54af9"
-                            name:
-                                type: string
-                                description: "Ім'я контакту"
-                                example: "John Doe"
-                            phoneNumber:
-                                type: string
-                                description: "Номер телефону контакту"
-                                example: "+1234567890"
-                            email:
-                                type: string
-                                description: "Електронна адреса контакту"
-                                example: "johndoe@example.com"
-                            isFavourite:
-                                type: boolean
-                                description: "Чи є контакт у списку улюблених"
-                                example: true
-                            contactType:
-                                type: string
-                                description: "Тип контакту"
-                                enum: ["work", "home", "personal"]
-                                example: "work"
-                            createdAt:
-                                type: string
-                                format: date-time
-                                description: "Дата створення контакту"
-                                example: "2023-05-01T12:00:00Z"
-                            updatedAt:
-                                type: string
-                                format: date-time
-                                description: "Дата останнього оновлення контакту"
-                                example: "2023-05-02T15:30:00Z"
+                    type: object
+                    properties:
+                        status:
+                            type: integer
+                            example: 200
+                            description: Статус запиту
+                        message:
+                            type: string
+                            example: "Successfully found contacts!"
+                            description: Повідомлення про успіх
+                        data:
+                            type: object
+                            properties:
+                                data:
+                                    type: array
+                                    items:
+                                        type: object
+                                        properties:
+                                            id:
+                                                type: string
+                                                description: "Унікальний ідентифікатор контакту"
+                                                example: "65e4decdd286b30065d54af9"
+                                            name:
+                                                type: string
+                                                description: "Ім'я контакту"
+                                                example: "John Doe"
+                                            phoneNumber:
+                                                type: string
+                                                description: "Номер телефону контакту"
+                                                example: "+1234567890"
+                                            email:
+                                                type: string
+                                                description: "Електронна адреса контакту"
+                                                example: "johndoe@example.com"
+                                            isFavourite:
+                                                type: boolean
+                                                description: "Чи є контакт у списку улюблених"
+                                                example: true
+                                            contactType:
+                                                type: string
+                                                description: "Тип контакту"
+                                                enum: ["work", "home", "personal"]
+                                                example: "work"
+                                            createdAt:
+                                                type: string
+                                                format: date-time
+                                                description: "Дата створення контакту"
+                                                example: "2023-05-01T12:00:00Z"
+                                            updatedAt:
+                                                type: string
+                                                format: date-time
+                                                description: "Дата останнього оновлення контакту"
+                                                example: "2023-05-02T15:30:00Z"
+                                currentPage:
+                                    type: integer
+                                    description: Поточна сторінка
+                                    example: 1
+                                totalPages:
+                                    type: integer
+                                    description: Загальна кількість сторінок
+                                    example: 5
+                                totalItems:
+                                    type: integer
+                                    description: Загальна кількість елементів
+                                    example: 50
     404:
         description: Контакти не знайдено
+        content:
+            application/json:
+                schema:
+                    type: object
+                    properties:
+                        status:
+                            type: integer
+                            example: 404
+                            description: Статус HTTP
+                        message:
+                            type: string
+                            example: "Contacts not found!"
+                            description: Повідомлення про помилку
