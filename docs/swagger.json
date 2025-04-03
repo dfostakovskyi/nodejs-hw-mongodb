@@ -82,6 +82,35 @@
               "type": "boolean"
             },
             "description": "Фільтр за улюбленими контактами"
+          },
+          {
+            "name": "sortField",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "name",
+                "email",
+                "phoneNumber",
+                "createdAt",
+                "updatedAt"
+              ]
+            },
+            "description": "Поле для сортування контактів"
+          },
+          {
+            "name": "sortOrder",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            },
+            "description": "Порядок сортування (зростаючий або спадний)"
           }
         ],
         "responses": {
