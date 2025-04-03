@@ -15,5 +15,31 @@ parameters:
 responses:
     204:
         description: Успішне видалення контакту
+        content:
+            application/json:
+                schema:
+                    type: object
+                    properties:
+                        status:
+                            type: integer
+                            example: 204
+                            description: HTTP статус
+                        message:
+                            type: string
+                            example: "Contact successfully deleted!"
+                            description: Повідомлення про успішне видалення
     404:
         description: Контакт не знайдено
+        content:
+            application/json:
+                schema:
+                    type: object
+                    properties:
+                        status:
+                            type: integer
+                            example: 404
+                            description: HTTP статус
+                        message:
+                            type: string
+                            example: "Contact not found!"
+                            description: Повідомлення про помилку
